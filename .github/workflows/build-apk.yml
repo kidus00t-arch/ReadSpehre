@@ -34,7 +34,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.9
+        run: |
+          gradle wrapper --gradle-version 8.9
+          chmod +x gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
@@ -48,7 +50,7 @@ jobs:
 
       - name: Build Release APK (unsigned)
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
         continue-on-error: true
 
       - name: Upload Release APK
