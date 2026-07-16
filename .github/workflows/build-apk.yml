@@ -26,15 +26,21 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Generate Gradle Wrapper (if missing)
+      - name: Accept Android SDK licenses
         run: |
-          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-            gradle wrapper --gradle-version 8.9
-          fi
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0" || true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.9
           chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -42,9 +48,6 @@ jobs:
           name: ReadSphere-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
-
-      - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build Release APK (unsigned)
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
